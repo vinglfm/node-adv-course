@@ -1,19 +1,26 @@
 const server = require('net').createServer();
 
+let currentId = 0;
+const sockets = {};
+
 server.on('connection', socket => {
-    console.log('Client connected');
-    socket.write('New client connected\n');
+    socket.id = currentId++;
+    sockets[socket.id] = socket;
+
+    console.log(`Client ${socket.id} connected`);
+    socket.write(`New client ${socket.id} connected\n`);
 
     socket.on('data', data => {
-        console.log('data is:', data);
-        socket.write('data is: ');
-        socket.write(data);
+        Object.entries(sockets).forEach(([, clientSocket]) => {
+            clientSocket.write(`${socket.id}: ${data}`);
+        });
     });
 
     socket.setEncoding('utf8');
 
     socket.on('end', () => {
-        console.log('Client disconnected');
+        delete(sockets[socket.id]);
+        console.log(`Client ${socket.id} disconnected`);
     });
 
     socket.on('error', (error) => {
