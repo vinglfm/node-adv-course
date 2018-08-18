@@ -1,0 +1,3 @@
+node --inspect --debug-brk file
+about:inspect in chrome to open client
+node debug file for console debuging
