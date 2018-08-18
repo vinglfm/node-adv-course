@@ -3,16 +3,31 @@ const server = require('net').createServer();
 let currentId = 0;
 const sockets = {};
 
+//moment library for timestamps
+function timestamp() {
+    const now = new Date();
+    return `${now.getHours()}:${now.getMinutes()}`;
+}
+
 server.on('connection', socket => {
-    socket.id = currentId++;
-    sockets[socket.id] = socket;
+    socket.id = currentId++;    
 
     console.log(`Client ${socket.id} connected`);
-    socket.write(`New client ${socket.id} connected\n`);
+    socket.write('Please type your name: ');
 
     socket.on('data', data => {
-        Object.entries(sockets).forEach(([, clientSocket]) => {
-            clientSocket.write(`${socket.id}: ${data}`);
+        if(!sockets[socket.id]) {
+            socket.name = data.toString().trim();
+            sockets[socket.id] = socket;
+            socket.write(`Welcome ${socket.name}!\n`)
+            return;
+        }
+        sockets[socket.id] = socket;
+        Object.entries(sockets).forEach(([key, clientSocket]) => {
+            if(socket.id == key) {
+                return;
+            }
+            clientSocket.write(`${timestamp()} ${socket.name}: ${data}\n`);
         });
     });
 
